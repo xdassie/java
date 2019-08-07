@@ -1,6 +1,6 @@
 FROM maven:3.5
 WORKDIR /tmp
 COPY pom.xml .
-COPY src .
+COPY src ./src/
 RUN mvn compile
 RUN find ./
