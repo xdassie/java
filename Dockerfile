@@ -3,4 +3,5 @@ WORKDIR /tmp
 COPY pom.xml .
 COPY src ./src/
 RUN mvn compile
+RUN mv test
 RUN find ./
