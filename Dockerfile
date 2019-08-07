@@ -5,3 +5,5 @@ COPY src ./src/
 RUN mvn compile
 RUN mvn test
 RUN find ./
+RUN cat  /tmp/target/surefire-reports/*
+
