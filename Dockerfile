@@ -1,1 +1,4 @@
-FROM jboss:jdk-8
+FROM maven:3.5
+RUN mvn package
+RUN find ./
+
