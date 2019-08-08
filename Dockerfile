@@ -5,5 +5,6 @@ COPY pom.xml .
 COPY src ./src/
 RUN mvn compile
 COPY testng.xml ./testng.xml
-RUN mvn test || find ./ && cat  /tmp/target/surefire-reports/*
+RUN mvn test 
+#|| find ./ && cat  /tmp/target/surefire-reports/*.xml
 
