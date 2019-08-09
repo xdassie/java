@@ -4,7 +4,7 @@ WORKDIR /tmp
 COPY pom.xml .
 COPY soccer_data.txt /soccer_data.txt
 COPY src ./src/
-RUN mvn compile
+#RUN mvn compile
 COPY testng.xml ./testng.xml
 RUN mvn test 
 #|| find ./ && cat  /tmp/target/surefire-reports/*.xml

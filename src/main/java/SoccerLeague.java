@@ -1,7 +1,8 @@
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-
+import java.util.List;
+import java.util.Arrays; 
 
 public class SoccerLeague
 {
@@ -12,9 +13,12 @@ public class SoccerLeague
                 .getOrCreate();
 
                 Dataset<Row> df = spark.read()
-                    .option("header", "true")
-                    .option("delimiter","\t")
+                    .option("header", "false")
+                    .option("delimiter",",")
                     .csv("file:///soccer_data.txt");
+
+		List<String> cols = Arrays.asList(df.columns());
+		cols.forEach(System.out::println); 
 
 	}
 	protected static SoccerLeague mInstance=new SoccerLeague(); 
