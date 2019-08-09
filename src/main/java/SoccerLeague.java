@@ -14,7 +14,7 @@ public class SoccerLeague
                 Dataset<Row> df = spark.read()
                     .option("header", "true")
                     .option("delimiter","\t")
-                    .csv("file://soccer_data.txt");
+                    .csv("file:///soccer_data.txt");
 
 	}
 	protected static SoccerLeague mInstance=new SoccerLeague(); 
