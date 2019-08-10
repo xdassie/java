@@ -10,6 +10,8 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Encoder;
 import org.apache.spark.sql.RelationalGroupedDataset;
+import org.apache.spark.sql.expressions.WindowSpec;
+
 
 public class SoccerLeague
 {
@@ -50,6 +52,8 @@ public class SoccerLeague
 		uniqueLhsClub.show();
 		uniqueRhsClub.show();
 		Dataset<Row> ranking = (uniqueLhsClub.unionAll(uniqueRhsClub)).groupBy("club_lhs").sum("sum(lhs_points)");
+		WindowSpec w = org.apache.spark.sql.expressions.Window.orderBy(org.apache.spark.sql.functions.col("sum(sum(lhs_points))").desc());
+		ranking = ranking.withColumn("ranking",functions.rank().over(w));
 		ranking.show();
 		df.show();
 
