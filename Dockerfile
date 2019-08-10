@@ -3,6 +3,7 @@ FROM xdassie/java-base:latest
 WORKDIR /tmp
 COPY pom.xml .
 COPY soccer_data.txt /soccer_data.txt
+RUN hexdump -C /soccer_data.txt
 COPY src ./src/
 #RUN mvn compile
 COPY testng.xml ./testng.xml
