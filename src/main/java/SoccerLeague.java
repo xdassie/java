@@ -6,7 +6,6 @@ import java.util.Arrays;
 import org.apache.spark.sql.functions;
 import org.apache.spark.sql.Column;
 import java.util.regex.Pattern;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Encoder;
 import org.apache.spark.sql.RelationalGroupedDataset;
@@ -15,22 +14,40 @@ import org.apache.spark.sql.expressions.WindowSpec;
 
 public class SoccerLeague
 {
-	public void init(){
-		SparkSession spark = SparkSession.builder()
+	private SparkSession spark = SparkSession.builder()
                 .master("local")
                 .appName("SoccerLeague")
                 .getOrCreate();
 
+	private  Dataset<Row> result = null;
+	private Dataset<Row> df=null;
+	public Dataset<Row> getResult() throws Exception{
+		if(result==null){
+			throw new Exception("The result has not been calculated yet");
+		}else{
+			return result;
+		}
+	}
+	public Dataset<Row> getWorkTable() throws Exception{
+		if(df==null){
+			throw new Exception("The work table has not been calculated yet");
+                }else{
+                        return df;
+                }
+        }
+
+	public void init(String fileUrl){
+
 		spark.sparkContext().setLogLevel("ERROR");
 
-                Dataset<Row> df = spark.read()
+                df = spark.read()
                     .option("header", "false")
                     .option("delimiter",",")
-                    .csv("file:///soccer_data.txt");
+                    .csv(fileUrl);
 		df.show();
 
 		List<String> cols = Arrays.asList(df.columns());
-		cols.forEach(System.out::println); 
+		cols.forEach(System.out::println);
 
 		String beforePattern="(?:(?!\\d+).)*"; 	//   "\\d+"
 		String scorePattern="\\d+";
@@ -56,14 +73,14 @@ public class SoccerLeague
 		ranking = ranking.withColumn("ranking",functions.rank().over(w));
 		ranking.show();
 		df.show();
-
+		result=ranking;
 	}
 	protected static SoccerLeague mInstance=new SoccerLeague(); 
 
 	public static void main(String[] args)
 	{
 		System.out.println("hello");
-		SoccerLeague.getInstance().init();
+		SoccerLeague.getInstance().init(args[0]);
 	}
 	public static SoccerLeague getInstance(){
 		return mInstance;
