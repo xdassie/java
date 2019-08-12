@@ -10,10 +10,35 @@ import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Encoder;
 import org.apache.spark.sql.RelationalGroupedDataset;
 import org.apache.spark.sql.expressions.WindowSpec;
-
-
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.io.IOException;
 public class SoccerLeague
 {
+	private String outputFileName="";
+	public String getOutputFileName(){
+		return outputFileName;
+	}
+	public void store() throws IOException, Exception{
+		if(result==null){
+                        throw new Exception("The result has not been calculated yet");
+                }
+		Path path=Files.createTempFile("SoccerLeague_","");
+		outputFileName = path.toString();
+		Files.delete(path);
+		String fileUrl="file://" +  outputFileName;
+		System.out.println("Output file  URL: " + fileUrl);
+
+//		result = result.withColumn("rank2",result.col("rank"));
+//		outputNuanced = outputNuanced.withColumn("rank",result.col("rank"));
+			// result.select(result.col("rank")  .plus(". ")
+			// , result.col("club_lhs")    , result.col("sum(sum(lhs_points))")
+			//.plus(" pts") 
+			//  );
+		System.out.println("Begin writing file");
+		result.select(result.col("ranking").plus(". "),result.col("lhs_club")  ,result.col("sum(sum(lhs_points))").plus(" pts")  ).write().csv(fileUrl);
+		System.out.println("Done writing file");
+	}
 	private SparkSession spark = SparkSession.builder()
                 .master("local")
                 .appName("SoccerLeague")
@@ -36,12 +61,14 @@ public class SoccerLeague
                 }
         }
 
-	private void init(){
+	public void init(){
                 spark.sparkContext().setLogLevel("ERROR");
+		df = null;
+		result=null;
 	}
 
 	public void ingest(String fileUrl){
-
+	// call this method any number of times to ingest input before  calling process() to calculate the results
 		Dataset<Row> newInput = spark.read()
                     .option("header", "false")
                     .option("delimiter",",")
@@ -54,7 +81,11 @@ public class SoccerLeague
 		}
 		df.show();
 	}
-	public void process(){
+	public void process() throws Exception{
+	// call this method after ingesting input files only
+		if(df==null){
+			throw new Exception("SoccerLeague::process - call this method after ingesting input files only");
+		}
 		List<String> cols = Arrays.asList(df.columns());
 		cols.forEach(System.out::println);
 
@@ -80,13 +111,19 @@ public class SoccerLeague
 		Dataset<Row> ranking = (uniqueLhsClub.unionAll(uniqueRhsClub)).groupBy("club_lhs").sum("sum(lhs_points)");
 		WindowSpec w = org.apache.spark.sql.expressions.Window.orderBy( org.apache.spark.sql.functions.col("sum(sum(lhs_points))").desc());
 		ranking = ranking.withColumn("ranking",functions.rank().over(w));
+		ranking=ranking.select(ranking.col("ranking"),ranking.col("club_lhs"), ranking.col("sum(sum(lhs_points))") );
 		ranking.show();
-		df.show();
+		if(df.count()<100) {
+			df.show();
+		}
 		result=ranking;
+		ranking=null;
+		// write the result ranking to a file
+		store();
 	}
 	protected static SoccerLeague mInstance=null;
 
-	public static void main(String[] args)
+	public static void main(String[] args) throws Exception
 	{
                 List<String> fileList = Arrays.asList(args);
 		for (String fileName : fileList){
