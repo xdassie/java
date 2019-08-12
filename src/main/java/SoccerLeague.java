@@ -2,7 +2,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import java.util.List;
-import java.util.Arrays; 
+import java.util.Arrays;
 import org.apache.spark.sql.functions;
 import org.apache.spark.sql.Column;
 import java.util.regex.Pattern;
@@ -19,7 +19,7 @@ public class SoccerLeague
                 .appName("SoccerLeague")
                 .getOrCreate();
 
-	private  Dataset<Row> result = null;
+	private Dataset<Row> result = null;
 	private Dataset<Row> df=null;
 	public Dataset<Row> getResult() throws Exception{
 		if(result==null){
@@ -36,16 +36,25 @@ public class SoccerLeague
                 }
         }
 
-	public void init(String fileUrl){
+	private void init(){
+                spark.sparkContext().setLogLevel("ERROR");
+	}
 
-		spark.sparkContext().setLogLevel("ERROR");
+	public void ingest(String fileUrl){
 
-                df = spark.read()
+		Dataset<Row> newInput = spark.read()
                     .option("header", "false")
                     .option("delimiter",",")
                     .csv(fileUrl);
-		df.show();
 
+		if(df==null){
+			df = newInput;
+		}else{
+			df = df.unionAll(newInput);
+		}
+		df.show();
+	}
+	public void process(){
 		List<String> cols = Arrays.asList(df.columns());
 		cols.forEach(System.out::println);
 
@@ -69,20 +78,27 @@ public class SoccerLeague
 		uniqueLhsClub.show();
 		uniqueRhsClub.show();
 		Dataset<Row> ranking = (uniqueLhsClub.unionAll(uniqueRhsClub)).groupBy("club_lhs").sum("sum(lhs_points)");
-		WindowSpec w = org.apache.spark.sql.expressions.Window.orderBy(org.apache.spark.sql.functions.col("sum(sum(lhs_points))").desc());
+		WindowSpec w = org.apache.spark.sql.expressions.Window.orderBy( org.apache.spark.sql.functions.col("sum(sum(lhs_points))").desc());
 		ranking = ranking.withColumn("ranking",functions.rank().over(w));
 		ranking.show();
 		df.show();
 		result=ranking;
 	}
-	protected static SoccerLeague mInstance=new SoccerLeague(); 
+	protected static SoccerLeague mInstance=null;
 
 	public static void main(String[] args)
 	{
-		System.out.println("hello");
-		SoccerLeague.getInstance().init(args[0]);
+                List<String> fileList = Arrays.asList(args);
+		for (String fileName : fileList){
+			SoccerLeague.getInstance().ingest(fileName);
+		}
+		SoccerLeague.getInstance().process();
 	}
 	public static SoccerLeague getInstance(){
+		if(mInstance==null){
+			mInstance=new SoccerLeague();
+			mInstance.init();
+		}
 		return mInstance;
 	}
 }

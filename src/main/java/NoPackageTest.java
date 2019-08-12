@@ -11,10 +11,11 @@ import java.util. Collections;
 
 public class NoPackageTest {
 @Test
-  public void testThis() throws Exception {
+  public void testCoreLogic() throws Exception {
 	SoccerLeague soccerLeague = SoccerLeague.getInstance();
 	// the test file is built into the Docker container for execution of the test by Maven
-	soccerLeague.init("file:///soccer_data.txt");
+	soccerLeague.ingest("file:///soccer_data.txt");
+	soccerLeague.process();
 	System.out.println(soccerLeague.toString());
 
 	SparkSession spark = SparkSession.builder()
@@ -34,12 +35,22 @@ public class NoPackageTest {
 	Assert.assertEquals(rawData.count(),workTable.count());
 	// check that the team with the highest number of wins has the highest rank
 	Row winner = ranking.first();
-	//Dataset<Row> highestScoreAgg = ranking.rollUp("sum(sum(lhs_points))").max("sum(sum(lhs_points))");
 	Map<String,String> expressions = Collections.singletonMap("sum(sum(lhs_points))", "max");
 	Dataset<Row> highestScoreAgg = ranking.agg(expressions);
 	highestScoreAgg.show();
 	Long highestScore = highestScoreAgg.first().getLong(0);
-	Assert.assertEquals((Long)winner.getLong(1),(Long)highestScore ); 
-	throw new Exception("don't forget to make it read various files from the filesystem or stdin");
+	Assert.assertEquals((Long)winner.getLong(1),(Long)highestScore );
   }
+
+@Test
+	public void testMultipleInputs() throws Exception{
+        // invoke the class via the main method with multiple inputs
+		String  files [] = {"file:///soccer_data.txt","file:///soccer_data.expanded.txt"};
+		SoccerLeague.main(files);
+	}
+@Test
+	public void testOutputFormat() throws Exception{
+		throw new Exception("this isn't done yet");
+	}
 }
+
