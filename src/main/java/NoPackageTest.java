@@ -2,11 +2,13 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.SparkSession;
+import static org.apache.spark.sql.functions.*;
 
 import org.testng.annotations.Test;
 import org.testng.Assert;
 import org.apache.spark.sql.functions.*;
 import java.util.Map;
+import java.util.HashMap;
 import java.util. Collections;
 
 public class NoPackageTest {
@@ -60,7 +62,7 @@ public class NoPackageTest {
 	public void testOutputFormat() throws Exception{
 		// is there a file at location stored in output1 and output2?
 		String fileUrl="file://" +  output1;
-		Dataset<Row> outputData = spark.read()
+ 		Dataset<Row> outputData = spark.read()
                     .option("header", "false")
                     .option("delimiter",",")
                     .csv(fileUrl);
@@ -72,10 +74,18 @@ public class NoPackageTest {
 		// is the correct data in the most recent file?
 		Dataset<Row> mostRecentResult = SoccerLeague.getInstance().getResult();
 		Assert.assertEquals(mostRecentResult.count(),outputData.count());
+                mostRecentResult.show();
 
-		Assert.assertEquals(mostRecentResult.col("ranking").plus(". ") , outputData.col("_c0") );
-		Assert.assertEquals(mostRecentResult.col("sum(sum(lhs_points))").plus(" pts") , outputData.col("_c2") );
-		Assert.assertEquals(mostRecentResult.col("lhs_club") , outputData.col("_c1") );
+//                Dataset<Row> outputData = result.select(concat(result.col("ranking") , lit(". ")) , result.col("club_lhs") , concat(result.col("sum(sum(lhs_points))") , lit(" pts") ) );
+
+		Dataset<Row> formattedResult =
+			mostRecentResult.select(concat(mostRecentResult.col("ranking") , lit(". ")) , mostRecentResult.col("club_lhs") 
+			, concat(mostRecentResult.col("sum(sum(lhs_points))") , lit(" pts") ) );
+
+		outputData.show();
+		Dataset<Row> interSection = formattedResult.intersectAll(outputData);
+		interSection.show();
+		Assert.assertEquals(mostRecentResult.count(),interSection.count());
 	}
 }
 

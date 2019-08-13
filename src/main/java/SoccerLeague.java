@@ -3,7 +3,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import java.util.List;
 import java.util.Arrays;
-import org.apache.spark.sql.functions;
+import static org.apache.spark.sql.functions.*;
 import org.apache.spark.sql.Column;
 import java.util.regex.Pattern;
 import org.apache.spark.sql.Encoders;
@@ -29,14 +29,11 @@ public class SoccerLeague
 		String fileUrl="file://" +  outputFileName;
 		System.out.println("Output file  URL: " + fileUrl);
 
-//		result = result.withColumn("rank2",result.col("rank"));
-//		outputNuanced = outputNuanced.withColumn("rank",result.col("rank"));
-			// result.select(result.col("rank")  .plus(". ")
-			// , result.col("club_lhs")    , result.col("sum(sum(lhs_points))")
-			//.plus(" pts") 
-			//  );
-		System.out.println("Begin writing file");
-		result.select(result.col("ranking").plus(". "),result.col("lhs_club")  ,result.col("sum(sum(lhs_points))").plus(" pts")  ).write().csv(fileUrl);
+		result = result.coalesce(1);
+		Dataset<Row> outputData = result.select(concat(result.col("ranking") , lit(". ")) , result.col("club_lhs") , concat(result.col("sum(sum(lhs_points))") , lit(" pts") ) );
+		outputData.show();
+                System.out.println("Begin writing file");
+		outputData.write().csv(fileUrl);
 		System.out.println("Done writing file");
 	}
 	private SparkSession spark = SparkSession.builder()
@@ -92,10 +89,10 @@ public class SoccerLeague
 		String beforePattern="(?:(?!\\d+).)*"; 	//   "\\d+"
 		String scorePattern="\\d+";
 		final Integer winPoints = 3 ;
-		df = df.withColumn("club_lhs",functions.trim(functions.regexp_extract(df.col("_c0") ,beforePattern,0)));
-		df = df.withColumn("club_rhs",functions.trim(functions.regexp_extract(df.col("_c1") ,beforePattern,0)));
-                df = df.withColumn("score_lhs",functions.regexp_extract(df.col("_c0") ,scorePattern,0).cast("int"));
-                df = df.withColumn("score_rhs",functions.regexp_extract(df.col("_c1") ,scorePattern,0).cast("int"));
+		df = df.withColumn("club_lhs",trim(regexp_extract(df.col("_c0") ,beforePattern,0)));
+		df = df.withColumn("club_rhs",trim(regexp_extract(df.col("_c1") ,beforePattern,0)));
+                df = df.withColumn("score_lhs",regexp_extract(df.col("_c0") ,scorePattern,0).cast("int"));
+                df = df.withColumn("score_rhs",regexp_extract(df.col("_c1") ,scorePattern,0).cast("int"));
 		// now the points can be computed  before grouping
 		df = df.withColumn("lhs_wins",df.col("score_lhs") .gt ( df.col("score_rhs") ).cast("int") );
 		df = df.withColumn("draw",df.col("score_lhs") .equalTo ( df.col("score_rhs") ).cast("int") );
@@ -109,8 +106,8 @@ public class SoccerLeague
 		uniqueLhsClub.show();
 		uniqueRhsClub.show();
 		Dataset<Row> ranking = (uniqueLhsClub.unionAll(uniqueRhsClub)).groupBy("club_lhs").sum("sum(lhs_points)");
-		WindowSpec w = org.apache.spark.sql.expressions.Window.orderBy( org.apache.spark.sql.functions.col("sum(sum(lhs_points))").desc());
-		ranking = ranking.withColumn("ranking",functions.rank().over(w));
+		WindowSpec w = org.apache.spark.sql.expressions.Window.orderBy( col("sum(sum(lhs_points))").desc());
+		ranking = ranking.withColumn("ranking",rank().over(w));
 		ranking=ranking.select(ranking.col("ranking"),ranking.col("club_lhs"), ranking.col("sum(sum(lhs_points))") );
 		ranking.show();
 		if(df.count()<100) {

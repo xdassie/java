@@ -8,7 +8,8 @@ RUN hexdump -C /soccer_data.txt
 COPY src ./src/
 #RUN mvn compile
 COPY testng.xml ./testng.xml
-ENV MAVEN_OPTS="-Xmx1024m -XX:MaxPermSize=128m"
+ENV MAVEN_OPTS="-Xmx2048m"
 RUN mvn test 
-#|| find ./ && cat  /tmp/target/surefire-reports/*.xml
+#|| find /tmp/ 
+
 
