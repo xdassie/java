@@ -32,7 +32,7 @@ public class SoccerLeague
 		result = result.coalesce(1);
  		Dataset<Row> outputData = result.select(
 			concat(concat(result.col("ranking") , lit(". ")) ,
-			result.col("club_lhs"))  ,
+			result.col("club_lhs") ),
 			concat(result.col("sum(sum(lhs_points))") , lit(" pts")  )
 		 );
 		outputData.show();
