@@ -30,7 +30,11 @@ public class SoccerLeague
 		System.out.println("Output file  URL: " + fileUrl);
 
 		result = result.coalesce(1);
-		Dataset<Row> outputData = result.select(concat(result.col("ranking") , lit(". ")) , result.col("club_lhs") , concat(result.col("sum(sum(lhs_points))") , lit(" pts") ) );
+ 		Dataset<Row> outputData = result.select(
+			trim(concat(result.col("ranking") , lit(". "))) ,
+			trim(result.col("club_lhs")) , 
+			trim(concat(result.col("sum(sum(lhs_points))") , lit(" pts") ))
+		 );
 		outputData.show();
                 System.out.println("Begin writing file");
 		outputData.write().csv(fileUrl);

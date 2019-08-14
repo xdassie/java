@@ -76,12 +76,17 @@ public class NoPackageTest {
 		Assert.assertEquals(mostRecentResult.count(),outputData.count());
                 mostRecentResult.show();
 
-//                Dataset<Row> outputData = result.select(concat(result.col("ranking") , lit(". ")) , result.col("club_lhs") , concat(result.col("sum(sum(lhs_points))") , lit(" pts") ) );
-
 		Dataset<Row> formattedResult =
-			mostRecentResult.select(concat(mostRecentResult.col("ranking") , lit(". ")) , mostRecentResult.col("club_lhs") 
-			, concat(mostRecentResult.col("sum(sum(lhs_points))") , lit(" pts") ) );
+			mostRecentResult.select(
+				trim(
+					concat(
+						mostRecentResult.col("ranking") , lit(". ")
+					)
+				).alias("_c0")
+			, trim(mostRecentResult.col("club_lhs")) .alias("_c1")
+			, trim(concat(mostRecentResult.col("sum(sum(lhs_points))") , lit(" pts") )) .alias("_c2") );
 
+		formattedResult.show();
 		outputData.show();
 		Dataset<Row> interSection = formattedResult.intersectAll(outputData);
 		interSection.show();
