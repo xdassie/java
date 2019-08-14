@@ -31,9 +31,9 @@ public class SoccerLeague
 
 		result = result.coalesce(1);
  		Dataset<Row> outputData = result.select(
-			trim(concat(result.col("ranking") , lit(". "))) ,
-			trim(result.col("club_lhs")) , 
-			trim(concat(result.col("sum(sum(lhs_points))") , lit(" pts") ))
+			concat(concat(result.col("ranking") , lit(". ")) ,
+			result.col("club_lhs"))  ,
+			concat(result.col("sum(sum(lhs_points))") , lit(" pts")  )
 		 );
 		outputData.show();
                 System.out.println("Begin writing file");

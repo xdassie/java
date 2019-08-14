@@ -10,6 +10,6 @@ COPY src ./src/
 COPY testng.xml ./testng.xml
 ENV MAVEN_OPTS="-Xmx2048m"
 RUN mvn test 
-#|| find /tmp/ 
+ 
 
 

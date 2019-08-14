@@ -78,13 +78,10 @@ public class NoPackageTest {
 
 		Dataset<Row> formattedResult =
 			mostRecentResult.select(
-				trim(
+				concat(
 					concat(
-						mostRecentResult.col("ranking") , lit(". ")
-					)
-				).alias("_c0")
-			, trim(mostRecentResult.col("club_lhs")) .alias("_c1")
-			, trim(concat(mostRecentResult.col("sum(sum(lhs_points))") , lit(" pts") )) .alias("_c2") );
+						mostRecentResult.col("ranking") , lit(". ")), trim(mostRecentResult.col("club_lhs"))) .alias("_c0")
+			, trim(concat(mostRecentResult.col("sum(sum(lhs_points))") , lit(" pts") )) .alias("_c1") );
 
 		formattedResult.show();
 		outputData.show();
