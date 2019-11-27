@@ -1,4 +1,4 @@
-FROM maven:3.6.0-jdk-11-alpine
+FROM maven:3-jdk-11
 WORKDIR /tmp
 COPY pom.xml .
 COPY src ./src/
