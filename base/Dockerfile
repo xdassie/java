@@ -6,6 +6,7 @@ COPY src ./src/
 #RUN apk update && apk upgrade
 RUN mvn compile
 COPY testng.xml ./testng.xml  
-RUN mvn install
+RUN mvn install -DskipTests
+
 
 
