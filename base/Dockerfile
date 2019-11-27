@@ -5,8 +5,7 @@ COPY pom.xml .
 COPY src ./src/
 #RUN apk update && apk upgrade
 RUN mvn compile
-COPY testng.xml ./testng.xml
-RUN mvn test  
+COPY testng.xml ./testng.xml  
 RUN mvn install
 
 
