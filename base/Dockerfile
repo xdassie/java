@@ -1,6 +1,6 @@
 #FROM maven:3.6.0-jdk-8-alpine
 #FROM maven:3.6.0-jdk-11-slim
-FROM debian:stretch
+FROM debian:stable
 WORKDIR /tmp
 COPY pom.xml .
 COPY src ./src/
