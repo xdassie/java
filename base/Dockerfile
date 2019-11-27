@@ -4,6 +4,7 @@ WORKDIR /tmp
 COPY pom.xml .
 COPY src ./src/
 #RUN apk update && apk upgrade
+RUN apt-get update && apt-get upgrade
 RUN mvn compile
 COPY testng.xml ./testng.xml  
 RUN mvn install -DskipTests
