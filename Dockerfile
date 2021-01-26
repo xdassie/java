@@ -9,7 +9,7 @@ COPY src ./src/
 #RUN mvn compile
 COPY testng.xml ./testng.xml
 ENV MAVEN_OPTS="-Xmx2048m"
-RUN mvn test 
+RUN mvn surefire:test 
  
 
 
