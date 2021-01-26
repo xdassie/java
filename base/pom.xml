@@ -7,8 +7,8 @@
   <version>1.0-SNAPSHOT</version>
  
   <properties>
-    <maven.compiler.source>1.9</maven.compiler.source>
-    <maven.compiler.target>1.9</maven.compiler.target>
+    <maven.compiler.source>1.11</maven.compiler.source>
+    <maven.compiler.target>1.11</maven.compiler.target>
   </properties>
  
   <dependencies>
@@ -22,7 +22,7 @@
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire</artifactId>
-      <version>3.0.0-M3</version>
+      <version>3.0.0-M5</version>
       <type>pom</type>
   </dependency>  
 
@@ -33,7 +33,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.20.1</version>
+                <version>3.0.0-M5</version>
                 <configuration>
                     <!-- Suite testng xml file to consider for test execution -->
                     <suiteXmlFiles>
